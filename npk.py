@@ -367,6 +367,12 @@ class NovaPackage(Package):
             data) - 8, 'Invalid Nova Package Size'
         return NovaPackage(data[8:])
 
+    def header_len(self):
+        size = 3 # ???
+        size -= 8 # NPK_MAGIC
+        for part in self._parts:
+            size += len(part.data) - 6 # part.id.value
+        return size - len(self[NpkPartID.SQUASHFS].data) # whole npk - sqfs data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -413,7 +419,8 @@ if __name__ == '__main__':
         option_npk[NpkPartID.NAME_INFO].data.name = args.name
         option_npk[NpkPartID.DESCRIPTION].data = args.description.encode(
         ) if args.description else args.name.encode()
-        option_npk[NpkPartID.NULL_BLOCK].data = b''
+        option_npk[NpkPartID.NULL_BLOCK].data = b'' # Wipe input npk padding
+        option_npk[NpkPartID.NULL_BLOCK].data = b'\x00' * (4096 - option_npk.header_len())
         option_npk[NpkPartID.SQUASHFS].data = open(args.squashfs, 'rb').read()
         option_npk.sign(kcdsa_private_key, eddsa_private_key)
         option_npk.save(args.output)
