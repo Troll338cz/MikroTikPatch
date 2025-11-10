@@ -8,6 +8,7 @@
 - MMIPS (bootloop)
 - SMIPS (bootloop)
 - PPC (not tested yet)
+- Tile (not tested yet)
 
 # Download
 
