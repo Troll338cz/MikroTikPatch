@@ -1,4 +1,6 @@
-# Notice
+> ## ⚠️ Important Notice
+>
+> **This project and its tools are for testing purposes only. Use at your own risk. Please use the officially licensed version for production environments.**
 
 ## The patch is currently tested and working for:
 - **X86 (ROS & CHR working)**
@@ -10,13 +12,21 @@
 - PPC (not tested yet)
 - Tile (not tested yet)
 
+Devices other then X86 and ARM64 CHR require different licence tool that is not supported.
+
+## Tested version support:
+6.?? - 6.49.15
+7.?? - 7.16.2
+
 # Download
 
-You can download the automatically generated RouterOS image from [here](https://github.com/loskiq/MikroTikPatch/releases).
+~~You can download the automatically generated RouterOS image from [here](https://github.com/loskiq/MikroTikPatch/releases).~~
+
+None, build your own patch files.
 
 # How to generate license key
 
-I have already generated the keys for you. You can use them to generate a license key and sign packages:
+I have already generated **public** test keys for you. You can use them to generate a license key and sign packages:
 
 ```
 export MIKRO_NPK_SIGN_PUBLIC_KEY="C293CED638A2A33C681FC8DE98EE26C54EADC5390C2DFCE197D35C83C416CF59"
@@ -27,7 +37,9 @@ export CUSTOM_LICENSE_PRIVATE_KEY="9DBC845E9018537810FDAE62824322EEE1B12BAD81FCA
 export CUSTOM_LICENSE_PUBLIC_KEY="723A34A6E3300F23E4BAA06156B9327514AEC170732655F16E04C17928DD770F"
 ```
 
-You can generate your own keys yourself, but in this case you will have to manually create a MikroTik image.
+You should generate your own keys yourself, but in this case you will have to manually create a MikroTik image and sign NPK files.
+
+Keep your key files in a safe place in a file or password manager, loss of keys means new images and licences need to be made.
 
 - Install Python 3.x
 - Clone this repository
@@ -38,11 +50,14 @@ Here is the command to generate your own keys:
 python3 license.py genkey
 ```
 
+All keys need to be part of shell environment variables to prevent ```KeyError: 'MIKRO_LICENSE_PUBLIC_KEY'``` failure.
+
 ## RouterOS
 
 ### Let's assume that your software_id is: 4JZ2-H049
 
 ```
+# python3 license.py licgenros software_id CUSTOM_LICENSE_PRIVATE_KEY
 loskiq@debian12:~# python3 license.py licgenros 4JZ2-H049 9DBC845E9018537810FDAE62824322EEE1B12BAD81FCA28EC295FB397C61CE0B
 -----BEGIN MIKROTIK SOFTWARE KEY------------
 50eNy667HxTQwmCtCpT15YaVx6lpPHQoy2w/KIsjoOHs
@@ -56,6 +71,7 @@ loskiq@debian12:~#
 ### Let's assume that your system_id is: pjLQ21gHzfI
 
 ```
+# python3 license.py licgenchr system_id CUSTOM_LICENSE_PRIVATE_KEY
 loskiq@debian12:~# python3 license.py licgenchr pjLQ21gHzfI 9DBC845E9018537810FDAE62824322EEE1B12BAD81FCA28EC295FB397C61CE0B
 -----BEGIN MIKROTIK SOFTWARE KEY------------
 hdMf+/8rDWLOCOuNt8qP82NgHbN8YdQfJcZNRyWzBerz
@@ -64,7 +80,7 @@ BfwOQF1ehUjNubOGkCf4zkPQrK7U+2hbM/uh7gJWGA==
 loskiq@debian12:~#
 ```
 
-# Generate own images
+# Generate own images (root required)
 
 ## Requirements
 
@@ -167,6 +183,19 @@ qemu-img convert -f raw -O vmdk install-image-$VERSION-patched.img install-image
 qemu-img convert -f raw -O vpc install-image-$VERSION-patched.img install-image-$VERSION-patched.vhd
 qemu-img convert -f raw -O vhdx install-image-$VERSION-patched.img install-image-$VERSION-patched.vhdx
 qemu-img convert -f raw -O vdi install-image-$VERSION-patched.img install-image-$VERSION-patched.vdi
+```
+
+## Build NPK file
+```
+# I created option files for you in a tar.
+# You can add more X86 static binaries to sbin folder to have tools you need.
+tar xvf option-squashfs-x86.tar
+mksquashfs option-root option.sfs -quiet -comp xz -no-xattrs -b 256k
+# Tool wants a patched .npk file as input, pick any you build before.
+# python3 npk.py create infile.npk outfile.npk install-name squashfs-file -desc="npk description"
+python3 npk.py create ./new_iso/gps-$LATEST_VERSION.npk ./option-$LATEST_VERSION.npk option ./option.sfs -desc="busybox and ash"
+#python3 npk.py sign infile.npk outfile.npk
+python3 npk.py sign ./option-$LATEST_VERSION.npk ./option-$LATEST_VERSION.npk
 ```
 
 ## Patch Cloud Hosted Router
