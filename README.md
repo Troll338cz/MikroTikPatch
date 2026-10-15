@@ -1,6 +1,9 @@
 > ## ⚠️ Important Notice
 >
 > **This project and its tools are for testing purposes only. Use at your own risk. Please use the officially licensed version for production environments.**
+>
+> Do not use outside lab environment, versions that this repo suppots have many vulnerabilities: [here](https://cert.pl/en/posts/2026/09/vulnerabilities-in-mikrotik-routeros-actively-exploited/) and [here](https://www.cycognito.com/blog/emerging-threat-cve-2026-84411-mikrotik-routeros-unauthenticated-root-rce-via-web-management/)
+
 
 ## The patch is currently tested and working for:
 - **X86 (ROS & CHR working)**
@@ -16,6 +19,7 @@ Devices other then X86 and ARM64 CHR require different licence tool that is not 
 
 ## Tested version support:
 6.?? - 6.49.15
+
 7.?? - 7.16.2
 
 # Download
@@ -194,8 +198,6 @@ mksquashfs option-root option.sfs -quiet -comp xz -no-xattrs -b 256k
 # Tool wants a patched .npk file as input, pick any you build before.
 # python3 npk.py create infile.npk outfile.npk install-name squashfs-file -desc="npk description"
 python3 npk.py create ./new_iso/gps-$LATEST_VERSION.npk ./option-$LATEST_VERSION.npk option ./option.sfs -desc="busybox and ash"
-#python3 npk.py sign infile.npk outfile.npk
-python3 npk.py sign ./option-$LATEST_VERSION.npk ./option-$LATEST_VERSION.npk
 ```
 
 ## Patch Cloud Hosted Router
@@ -255,3 +257,10 @@ zip ../all_packages-mipsbe-$VERSION-patched.zip *.npk
 cd ../
 rm -rf ./all_packages-mipsbe
 ```
+
+## Tips
+To trigger device-mode update login as devel and run reboot -f
+
+Key variables need to be present in your shell script or session to correctly run commands (copy paste export ...)
+
+
